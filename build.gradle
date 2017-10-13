@@ -1,0 +1,26 @@
+buildscript {
+    ext {
+        junit_version = '4.12'
+        metanalysis_version = '0.2.0'
+    }
+}
+
+group 'org.metanalysis'
+version '0.2.0'
+
+apply plugin: 'application'
+
+mainClassName = "org.metanalysis.samples.Main"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation "com.github.andreihh.metanalysis:metanalysis-core:$metanalysis_version"
+
+    testImplementation "junit:junit:$junit_version"
+}
