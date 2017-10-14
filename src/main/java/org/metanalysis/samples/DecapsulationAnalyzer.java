@@ -27,15 +27,13 @@ import static org.metanalysis.core.model.Utils.walkSourceTree;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * An analyzer which reports decapsulations for fields.
  *
- * @see Decapsulation
+ * @see DecapsulationSet
  */
 final class DecapsulationAnalyzer {
     private DecapsulationAnalyzer() {}
@@ -44,7 +42,7 @@ final class DecapsulationAnalyzer {
      * Returns a map containing the decapsulations for each field which occurred
      * in the given {@code transactions}.
      */
-    static Map<String, Set<Decapsulation>> analyze(
+    static Map<String, DecapsulationSet> analyze(
             Iterable<Transaction> transactions) {
         DecapsulationAnalyzer analyzer = new DecapsulationAnalyzer();
         for (Transaction transaction : transactions) {
@@ -119,7 +117,7 @@ final class DecapsulationAnalyzer {
     private final Project project = new Project(new ArrayList<SourceUnit>());
 
     /** The recorded field decapsulations. */
-    private final Map<String, Set<Decapsulation>> decapsulations =
+    private final Map<String, DecapsulationSet> decapsulations =
             new HashMap<>();
 
     /**
@@ -129,25 +127,25 @@ final class DecapsulationAnalyzer {
         // Get all the nodes added in this edit.
         List<SourceNode> addedNodes = walkSourceTree(edit.getNode());
 
-        for (SourceNode node : addedNodes) {
-            String id = node.getId();
+        for (SourceNode sourceNode : addedNodes) {
+            DecapsulationSet.Node node =
+                    new DecapsulationSet.Node(
+                            sourceNode.getId(), transactionId);
 
-            if (node instanceof SourceNode.SourceEntity.Variable) {
+            if (sourceNode instanceof SourceNode.SourceEntity.Variable) {
                 // If a field was added, create a new entry in the map.
-                decapsulations.put(id, new HashSet<Decapsulation>());
-            } else if (node instanceof SourceNode.SourceEntity.Function) {
+                decapsulations.put(node.getId(), new DecapsulationSet(node));
+            } else if (sourceNode instanceof SourceNode.SourceEntity.Function) {
                 SourceNode.SourceEntity.Function accessor =
-                        (SourceNode.SourceEntity.Function) node;
+                        (SourceNode.SourceEntity.Function) sourceNode;
 
                 // If a function was added, check if it's an accessor for an
                 // existing field.
                 String fieldId = getFieldIdForAccessor(accessor);
                 if (fieldId != null && project.find(fieldId) != null) {
                     // Add the decapsulation.
-                    Decapsulation decapsulation =
-                            new Decapsulation(fieldId, id, transactionId);
                     if (decapsulations.containsKey(fieldId)) {
-                        decapsulations.get(fieldId).add(decapsulation);
+                        decapsulations.get(fieldId).addAccessor(node);
                     }
                 }
             }
@@ -157,30 +155,27 @@ final class DecapsulationAnalyzer {
     /**
      * Processes the given {@code edit} from the given {@code transactionId}.
      */
-    private void visit(ProjectEdit.RemoveNode edit, String transactionId) {
+    private void visit(ProjectEdit.RemoveNode edit) {
         // Get all the nodes removed in this edit.
         List<SourceNode> removedNodes =
                 walkSourceTree(project.find(edit.getId()));
 
-        for (SourceNode node : removedNodes) {
-            String id = node.getId();
-
-            if (node instanceof SourceNode.SourceEntity.Variable) {
+        for (SourceNode sourceNode : removedNodes) {
+            if (sourceNode instanceof SourceNode.SourceEntity.Variable) {
                 // If a field was removed, remove its entry from the map.
-                decapsulations.remove(id);
-            } else if (node instanceof SourceNode.SourceEntity.Function) {
+                decapsulations.remove(sourceNode.getId());
+            } else if (sourceNode instanceof SourceNode.SourceEntity.Function) {
                 SourceNode.SourceEntity.Function accessor =
-                        (SourceNode.SourceEntity.Function) node;
+                        (SourceNode.SourceEntity.Function) sourceNode;
+                String accessorId = accessor.getId();
 
                 // If a function was removed, check if it's an accessor for an
                 // existing field.
                 String fieldId = getFieldIdForAccessor(accessor);
                 if (fieldId != null && project.find(fieldId) != null) {
                     // Remove the corresponding decapsulation.
-                    Decapsulation decapsulation =
-                            new Decapsulation(fieldId, id, transactionId);
                     if (decapsulations.containsKey(fieldId)) {
-                        decapsulations.get(fieldId).remove(decapsulation);
+                        decapsulations.get(fieldId).removeAccessor(accessorId);
                     }
                 }
             }
@@ -195,7 +190,7 @@ final class DecapsulationAnalyzer {
         if (edit instanceof ProjectEdit.AddNode) {
             visit((ProjectEdit.AddNode) edit, transactionId);
         } else if (edit instanceof ProjectEdit.RemoveNode) {
-            visit((ProjectEdit.RemoveNode) edit, transactionId);
+            visit((ProjectEdit.RemoveNode) edit);
         }
     }
 }

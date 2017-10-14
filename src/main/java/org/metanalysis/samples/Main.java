@@ -36,21 +36,18 @@ public class Main {
         }
 
         // Analyze the decapsulations based on the repository history.
-        Map<String, Set<Decapsulation>> decapsulations =
+        Map<String, DecapsulationSet> decapsulations =
                 DecapsulationAnalyzer.analyze(repository.getHistory());
 
         // Check the decapsulations for each field.
-        for (String nodeId : decapsulations.keySet()) {
-            Set<Decapsulation> nodeDecapsulations = decapsulations.get(nodeId);
-            if (!nodeDecapsulations.isEmpty()) {
-                System.out.println("- " + nodeId);
-                for (Decapsulation decapsulation : nodeDecapsulations) {
-                    System.out.println(
-                            "  - "
-                                    + decapsulation.getAccessorId()
-                                    + " ("
-                                    + decapsulation.getTransactionId()
-                                    + ")");
+        for (DecapsulationSet decapsulationSet : decapsulations.values()) {
+            Set<DecapsulationSet.Node> accessors =
+                    decapsulationSet.getAccessors();
+            // No need to print a field if it wasn't decapsulated.
+            if (!accessors.isEmpty()) {
+                System.out.println("- " + decapsulationSet.getField());
+                for (DecapsulationSet.Node accessor : accessors) {
+                    System.out.println("  - " + accessor);
                 }
             }
         }
