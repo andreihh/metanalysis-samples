@@ -25,7 +25,7 @@ import org.metanalysis.core.model.Transaction;
 import static org.metanalysis.core.model.Utils.getParentId;
 import static org.metanalysis.core.model.Utils.walkSourceTree;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,12 +84,13 @@ final class DecapsulationAnalyzer {
      * Returns the field name corresponding to the given {@code accessor}
      * signature, or {@code null} if the given string is not an accessor.
      */
-    private static String getFieldForAccessor(String accessor) {
+    private static String getFieldForAccessor(String accessorSignature) {
+        String accessor = removeSignature(accessorSignature);
         if (accessor.length() > 3
                 && (accessor.startsWith("get") || accessor.startsWith("set"))) {
-            return decapitalize(removeSignature(accessor).substring(3));
+            return decapitalize(accessor.substring(3));
         } else if (accessor.length() > 2 && accessor.startsWith("is")) {
-            return decapitalize(removeSignature(accessor).substring(2));
+            return decapitalize(accessor.substring(2));
         } else {
             return null;
         }
@@ -115,8 +116,7 @@ final class DecapsulationAnalyzer {
     }
 
     /** The analyzed project. Initially, it is empty. */
-    private final Project project =
-            new Project(Collections.<SourceUnit>emptyList());
+    private final Project project = new Project(new ArrayList<SourceUnit>());
 
     /** The recorded field decapsulations. */
     private final Map<String, Set<Decapsulation>> decapsulations =
@@ -146,7 +146,9 @@ final class DecapsulationAnalyzer {
                     // Add the decapsulation.
                     Decapsulation decapsulation =
                             new Decapsulation(fieldId, id, transactionId);
-                    decapsulations.get(fieldId).add(decapsulation);
+                    if (decapsulations.containsKey(fieldId)) {
+                        decapsulations.get(fieldId).add(decapsulation);
+                    }
                 }
             }
         }
@@ -177,7 +179,9 @@ final class DecapsulationAnalyzer {
                     // Remove the corresponding decapsulation.
                     Decapsulation decapsulation =
                             new Decapsulation(fieldId, id, transactionId);
-                    decapsulations.get(fieldId).remove(decapsulation);
+                    if (decapsulations.containsKey(fieldId)) {
+                        decapsulations.get(fieldId).remove(decapsulation);
+                    }
                 }
             }
         }
