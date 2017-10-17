@@ -31,8 +31,7 @@ public class Main {
         // If the repository is `null`, then the project was not previously
         // persisted.
         if (repository == null) {
-            System.err.println("Repository was not persisted!");
-            System.exit(1);
+            throw new IOException("Repository was not persisted!");
         }
 
         // Analyze the decapsulations based on the repository history.

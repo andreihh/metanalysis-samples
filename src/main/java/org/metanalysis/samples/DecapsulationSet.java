@@ -108,4 +108,18 @@ final class DecapsulationSet {
             }
         }
     }
+
+    @Override
+    public int hashCode() {
+        return field.hashCode() * 37 + accessors.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DecapsulationSet)) {
+            return false;
+        }
+        DecapsulationSet other = (DecapsulationSet) o;
+        return field.equals(other.field) && accessors.equals(other.accessors);
+    }
 }
