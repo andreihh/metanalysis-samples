@@ -16,12 +16,6 @@
 
 package org.metanalysis.samples;
 
-import org.metanalysis.core.model.Project;
-import org.metanalysis.core.model.ProjectEdit;
-import org.metanalysis.core.model.SourceNode;
-import org.metanalysis.core.model.SourceNode.SourceUnit;
-import org.metanalysis.core.model.Transaction;
-
 import static org.metanalysis.core.model.Utils.getParentId;
 import static org.metanalysis.core.model.Utils.walkSourceTree;
 
@@ -29,6 +23,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.metanalysis.core.model.Project;
+import org.metanalysis.core.model.ProjectEdit;
+import org.metanalysis.core.model.SourceNode;
+import org.metanalysis.core.model.SourceNode.SourceUnit;
+import org.metanalysis.core.model.Transaction;
 
 /**
  * An analyzer which reports decapsulations for fields.

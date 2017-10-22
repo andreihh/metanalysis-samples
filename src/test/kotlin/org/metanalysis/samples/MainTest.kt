@@ -19,12 +19,10 @@ package org.metanalysis.samples
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-
 import org.metanalysis.core.repository.InteractiveRepository
 import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
 import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
-
 import java.io.IOException
 
 class MainTest {

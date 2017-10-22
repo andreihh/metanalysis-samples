@@ -18,7 +18,6 @@ package org.metanalysis.samples
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
-
 import org.metanalysis.samples.DecapsulationSet.Node
 import org.metanalysis.test.core.model.transaction
 

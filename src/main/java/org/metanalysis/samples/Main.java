@@ -16,12 +16,11 @@
 
 package org.metanalysis.samples;
 
-import org.metanalysis.core.repository.PersistentRepository;
-import org.metanalysis.core.repository.Repository;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import org.metanalysis.core.repository.PersistentRepository;
+import org.metanalysis.core.repository.Repository;
 
 public class Main {
     public static void main(String[] args) throws IOException {
