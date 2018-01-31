@@ -19,15 +19,17 @@ package org.metanalysis.samples;
 import static org.metanalysis.core.model.Utils.getParentId;
 import static org.metanalysis.core.model.Utils.walkSourceTree;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.metanalysis.core.model.AddNode;
+import org.metanalysis.core.model.Function;
 import org.metanalysis.core.model.Project;
 import org.metanalysis.core.model.ProjectEdit;
+import org.metanalysis.core.model.RemoveNode;
 import org.metanalysis.core.model.SourceNode;
-import org.metanalysis.core.model.SourceNode.SourceUnit;
-import org.metanalysis.core.model.Transaction;
+import org.metanalysis.core.model.Variable;
+import org.metanalysis.core.repository.Transaction;
 
 /**
  * An analyzer which reports decapsulations for fields.
@@ -53,7 +55,7 @@ final class DecapsulationAnalyzer {
             // Update the analyzed project. Don't update for every edit, because
             // adding a field and an accessor in the same transaction is not a
             // decapsulation.
-            analyzer.project.apply(transaction);
+            analyzer.project.apply(transaction.getEdits());
         }
         return analyzer.decapsulations;
     }
@@ -97,8 +99,7 @@ final class DecapsulationAnalyzer {
      * Returns the qualified field id corresponding to the given {@code
      * accessor}, or {@code null} if the given function is not an accessor.
      */
-    private static String getFieldIdForAccessor(
-            SourceNode.SourceEntity.Function accessor) {
+    private static String getFieldIdForAccessor(Function accessor) {
         // Get the id of the parent source entity.
         String parentId = getParentId(accessor);
         // Get the non-qualified signature of the accessor.
@@ -113,7 +114,7 @@ final class DecapsulationAnalyzer {
     }
 
     /** The analyzed project. Initially, it is empty. */
-    private final Project project = new Project(new ArrayList<SourceUnit>());
+    private final Project project = Project.empty();
 
     /** The recorded field decapsulations. */
     private final Map<String, DecapsulationSet> decapsulations =
@@ -122,7 +123,7 @@ final class DecapsulationAnalyzer {
     /**
      * Processes the given {@code edit} from the given {@code transactionId}.
      */
-    private void visit(ProjectEdit.AddNode edit, String transactionId) {
+    private void visit(AddNode edit, String transactionId) {
         // Get all the nodes added in this edit.
         List<SourceNode> addedNodes = walkSourceTree(edit.getNode());
 
@@ -131,17 +132,16 @@ final class DecapsulationAnalyzer {
                     new DecapsulationSet.Node(
                             sourceNode.getId(), transactionId);
 
-            if (sourceNode instanceof SourceNode.SourceEntity.Variable) {
+            if (sourceNode instanceof Variable) {
                 // If a field was added, create a new entry in the map.
                 decapsulations.put(node.getId(), new DecapsulationSet(node));
-            } else if (sourceNode instanceof SourceNode.SourceEntity.Function) {
-                SourceNode.SourceEntity.Function accessor =
-                        (SourceNode.SourceEntity.Function) sourceNode;
+            } else if (sourceNode instanceof Function) {
+                Function accessor = (Function) sourceNode;
 
                 // If a function was added, check if it's an accessor for an
                 // existing field.
                 String fieldId = getFieldIdForAccessor(accessor);
-                if (fieldId != null && project.find(fieldId) != null) {
+                if (fieldId != null && project.get(fieldId) != null) {
                     // Add the decapsulation.
                     if (decapsulations.containsKey(fieldId)) {
                         decapsulations.get(fieldId).addAccessor(node);
@@ -154,24 +154,23 @@ final class DecapsulationAnalyzer {
     /**
      * Processes the given {@code edit} from the given {@code transactionId}.
      */
-    private void visit(ProjectEdit.RemoveNode edit) {
+    private void visit(RemoveNode edit) {
         // Get all the nodes removed in this edit.
         List<SourceNode> removedNodes =
-                walkSourceTree(project.find(edit.getId()));
+                walkSourceTree(project.get(edit.getId()));
 
         for (SourceNode sourceNode : removedNodes) {
-            if (sourceNode instanceof SourceNode.SourceEntity.Variable) {
+            if (sourceNode instanceof Variable) {
                 // If a field was removed, remove its entry from the map.
                 decapsulations.remove(sourceNode.getId());
-            } else if (sourceNode instanceof SourceNode.SourceEntity.Function) {
-                SourceNode.SourceEntity.Function accessor =
-                        (SourceNode.SourceEntity.Function) sourceNode;
+            } else if (sourceNode instanceof Function) {
+                Function accessor = (Function) sourceNode;
                 String accessorId = accessor.getId();
 
                 // If a function was removed, check if it's an accessor for an
                 // existing field.
                 String fieldId = getFieldIdForAccessor(accessor);
-                if (fieldId != null && project.find(fieldId) != null) {
+                if (fieldId != null && project.get(fieldId) != null) {
                     // Remove the corresponding decapsulation.
                     if (decapsulations.containsKey(fieldId)) {
                         decapsulations.get(fieldId).removeAccessor(accessorId);
@@ -186,10 +185,10 @@ final class DecapsulationAnalyzer {
      */
     private void visit(ProjectEdit edit, String transactionId) {
         // We only care about adding and removing nodes.
-        if (edit instanceof ProjectEdit.AddNode) {
-            visit((ProjectEdit.AddNode) edit, transactionId);
-        } else if (edit instanceof ProjectEdit.RemoveNode) {
-            visit((ProjectEdit.RemoveNode) edit);
+        if (edit instanceof AddNode) {
+            visit((AddNode) edit, transactionId);
+        } else if (edit instanceof RemoveNode) {
+            visit((RemoveNode) edit);
         }
     }
 }

@@ -7,7 +7,7 @@ A sample demonstrating `Java` usage of
 
 ## Features
 
-- detects addition of accessor method for existing fields (decapsulation)
+- detects the addition of accessor methods for existing fields (decapsulation)
 
 ## Environment requirements
 
