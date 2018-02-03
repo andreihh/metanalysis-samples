@@ -16,7 +16,7 @@
 
 package org.metanalysis.samples;
 
-import static org.metanalysis.test.core.repository.BuildersKt.repository;
+import static org.metanalysis.test.core.repository.Builders.repository;
 
 import java.io.IOException;
 import org.junit.After;

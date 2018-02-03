@@ -17,7 +17,7 @@
 package org.metanalysis.samples;
 
 import static org.junit.Assert.assertEquals;
-import static org.metanalysis.test.core.repository.BuildersKt.repository;
+import static org.metanalysis.test.core.repository.Builders.repository;
 
 import java.util.HashMap;
 import java.util.Map;

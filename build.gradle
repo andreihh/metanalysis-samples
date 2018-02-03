@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        metanalysis_version = '0.2.2'
+        metanalysis_version = '0.2.3'
         junit_version = '4.12'
     }
 
@@ -10,7 +10,7 @@ buildscript {
 }
 
 group 'org.metanalysis'
-version '0.2.2'
+version '0.2.3'
 
 apply plugin: 'application'
 apply plugin: 'jacoco'

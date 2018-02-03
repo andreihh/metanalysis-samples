@@ -11,7 +11,7 @@ A sample demonstrating `Java` usage of
 
 ## Environment requirements
 
-In order to use `metanalysis` you need to have `JDK 1.7` or newer.
+In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 
 ## Using the command line
 
